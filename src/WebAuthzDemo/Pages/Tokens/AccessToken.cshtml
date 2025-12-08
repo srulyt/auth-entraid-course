@@ -1,0 +1,188 @@
+@page
+@model AccessTokenModel
+@{
+    ViewData["Title"] = "Access Token";
+}
+
+<div class="card">
+    <div class="card-header">
+        Access Token Explorer
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            <strong>⚠ Error:</strong> @Model.ErrorMessage
+        </div>
+        
+        @if (Model.ErrorMessage.Contains("consent") || Model.ErrorMessage.Contains("permission"))
+        {
+            <div class="alert alert-info">
+                <h4>How to Fix:</h4>
+                <ol>
+                    <li>Go to Azure Portal → App registrations → Your app</li>
+                    <li>Click "API permissions"</li>
+                    <li>Add "Microsoft Graph" → Delegated permissions → "User.Read"</li>
+                    <li>Click "Grant admin consent" (if you have admin privileges)</li>
+                    <li>Or sign out and sign in again to trigger user consent</li>
+                </ol>
+            </div>
+        }
+    }
+
+    @if (Model.TokenParts != null)
+    {
+        <div class="alert alert-success">
+            <strong>✓ Access Token Retrieved</strong> - This token grants access to Microsoft Graph.
+        </div>
+
+        <div class="help-sidebar">
+            <h3>💡 About Access Tokens</h3>
+            <ul>
+                <li><strong>Purpose:</strong> Access tokens are intended for <em>resource APIs</em> to grant or deny access</li>
+                <li><strong>Audience:</strong> Should match the resource API (e.g., Microsoft Graph)</li>
+                <li><strong>Scopes (scp):</strong> Delegated permissions the user has consented to</li>
+                <li><strong>NOT for client:</strong> Don't use access tokens to identify users - use ID tokens instead</li>
+                <li><strong>Lifetime:</strong> Typically 1 hour, can be refreshed using refresh tokens</li>
+            </ul>
+        </div>
+
+        <h2>Token Metadata</h2>
+        <div class="token-metadata">
+            <div class="metadata-item">
+                <div class="metadata-label">Issuer</div>
+                <div class="metadata-value">@Model.TokenParts.Issuer</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">Audience</div>
+                <div class="metadata-value">@(Model.TokenParts.Audiences.FirstOrDefault() ?? "N/A")</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">Valid From</div>
+                <div class="metadata-value">@Model.TokenParts.ValidFrom.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">Expires At</div>
+                <div class="metadata-value">@Model.TokenParts.ValidTo.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">Time Remaining</div>
+                <div class="metadata-value">@Model.TimeToExpiration</div>
+            </div>
+        </div>
+
+        <h2>Scopes (Permissions)</h2>
+        @if (Model.Scopes.Any())
+        {
+            <div class="alert alert-info">
+                This access token grants the following delegated permissions:
+            </div>
+            <ul>
+                @foreach (var scope in Model.Scopes)
+                {
+                    <li><strong>@scope</strong></li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                <strong>⚠ No scopes found</strong> - This token may not grant any specific permissions.
+            </div>
+        }
+
+        <h2>Key Claims</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Claim</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model.ImportantClaims)
+                {
+                    <tr>
+                        <td><code>@claim.Key</code></td>
+                        <td>@claim.Value</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h2>Token Structure</h2>
+        
+        <h3>Header</h3>
+        <pre><code>@Model.TokenParts.Header</code></pre>
+
+        <h3>Payload</h3>
+        <pre><code>@Model.TokenParts.Payload</code></pre>
+
+        <h3>Signature</h3>
+        <div class="alert alert-info">
+            <strong>ℹ Signature:</strong> Redacted for security
+            <br /><code>@Model.TokenParts.Signature.Substring(0, Math.Min(20, Model.TokenParts.Signature.Length))...</code>
+        </div>
+
+        <h2>Token Comparison</h2>
+        <div class="help-sidebar">
+            <h3>ID Token vs Access Token</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>ID Token</th>
+                        <th>Access Token</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Audience</strong></td>
+                        <td>Your app (Client ID)</td>
+                        <td>Resource API (e.g., Graph)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Purpose</strong></td>
+                        <td>Prove user identity</td>
+                        <td>Grant API access</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contains</strong></td>
+                        <td>User profile info</td>
+                        <td>Permissions (scopes/roles)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Used by</strong></td>
+                        <td>Client application</td>
+                        <td>Resource server/API</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Actions</h2>
+        <div class="btn-group">
+            <button class="btn btn-secondary btn-sm" onclick="copyToken()">📋 Copy Token</button>
+            <a href="@Model.JwtMsUrl" target="_blank" class="btn btn-primary btn-sm">🔗 Open in jwt.ms</a>
+            <a href="/ProtectedApi" class="btn btn-success btn-sm">Test with Protected API</a>
+        </div>
+
+        <script>
+            function copyToken() {
+                const token = '@Html.Raw(Model.TokenParts.RawToken)';
+                navigator.clipboard.writeText(token).then(() => {
+                    alert('Access token copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy token:', err);
+                });
+            }
+        </script>
+    }
+    else if (string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-warning">
+            <strong>⚠ Not Authenticated</strong> - Please sign in first.
+        </div>
+        <a href="/MicrosoftIdentity/Account/SignIn" class="btn btn-primary">Sign In</a>
+    }
+</div>

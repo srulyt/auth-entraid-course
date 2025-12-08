@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Entra ID Auth & Authz Labs</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a class="brand" href="/">Auth Labs</a>
+            <ul>
+                <li><a href="/">Home</a></li>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Lab 1: Authentication ▼</a>
+                        <div class="dropdown-content">
+                            <a href="/Tokens/IdToken">ID Token</a>
+                            <a href="/Tokens/AccessToken">Access Token</a>
+                            <a href="/Claims">Claims</a>
+                        </div>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropbtn">Lab 2: Authorization ▼</a>
+                        <div class="dropdown-content">
+                            <a href="/ProtectedApi">Authorization Examples</a>
+                        </div>
+                    </li>
+                    <li><a href="/MicrosoftIdentity/Account/SignOut">Sign Out</a></li>
+                }
+                else
+                {
+                    <li><a href="/MicrosoftIdentity/Account/SignIn">Sign In</a></li>
+                }
+            </ul>
+        </div>
+    </nav>
+
+    <main role="main">
+        <div class="container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 - Entra ID Authentication & Authorization Labs</p>
+        </div>
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

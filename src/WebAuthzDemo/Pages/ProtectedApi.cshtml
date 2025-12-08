@@ -1,0 +1,361 @@
+@page
+@model ProtectedApiModel
+@{
+    ViewData["Title"] = "Authorization Lab";
+}
+
+<div class="card">
+    <div class="card-header">
+        Lab 2: Authorization with Microsoft Entra ID
+    </div>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="alert alert-success">
+            <strong>✓ Authenticated</strong> - You are signed in as @User.Identity.Name
+        </div>
+
+        <div class="help-sidebar">
+            <h3>💡 Key Concepts</h3>
+            <ul>
+                <li><strong>Authentication (AuthN):</strong> Proves <em>who you are</em> - identity verification</li>
+                <li><strong>Authorization (AuthZ):</strong> Determines <em>what you can do</em> - permission checking</li>
+                <li><strong>Claims:</strong> Information about the user in the token that drives authorization decisions</li>
+                <li><strong>Policies:</strong> Code that evaluates claims to grant or deny access</li>
+            </ul>
+        </div>
+
+        <h2>Your Authorization Status</h2>
+        <div class="token-metadata">
+            <div class="metadata-item">
+                <div class="metadata-label">Authenticated</div>
+                <div class="metadata-value">✓ Yes - You can access Example 1</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">Local Admin Role</div>
+                <div class="metadata-value">@(Model.HasLocalAdminRole ? "✓ Yes - You can access Example 2" : "✗ No - Assign yourself the role to access Example 2")</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">User.Read Permission</div>
+                <div class="metadata-value">✓ Configured by default - You can access Example 3</div>
+            </div>
+            @if (Model.LocalRoles.Any())
+            {
+                <div class="metadata-item">
+                    <div class="metadata-label">Your Local Roles</div>
+                    <div class="metadata-value">@string.Join(", ", Model.LocalRoles)</div>
+                </div>
+            }
+        </div>
+
+        <h2>Three Authorization Examples</h2>
+
+        <div style="display: grid; gap: 2rem; margin: 2rem 0;">
+            
+            <!-- Example 1: Authentication Only -->
+            <div style="border: 2px solid #0078d4; padding: 1.5rem; border-radius: 8px;">
+                <h3>📝 Example 1: Authentication-Only Authorization</h3>
+                <p><strong>Learning Goal:</strong> Understand the difference between AuthN and AuthZ</p>
+                <p><strong>Endpoint:</strong> <code>GET /api/authenticated</code></p>
+                <p><strong>Requirement:</strong> Just be signed in (no specific permissions)</p>
+                
+                <div style="background: #f0f8ff; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+                    <strong>Teaching Point:</strong> Authentication proves <em>WHO you are</em>. 
+                    This endpoint uses <code>[Authorize]</code> with no policy, so any authenticated user can access it.
+                </div>
+
+                <button class="btn btn-primary" onclick="callExample1()" id="btn1">
+                    Test Authentication-Only Endpoint
+                </button>
+                
+                <div id="result1" style="margin-top: 1rem;"></div>
+            </div>
+
+            <!-- Example 2: Local Admin RBAC -->
+            <div style="border: 2px solid #28a745; padding: 1.5rem; border-radius: 8px;">
+                <h3>🛡️ Example 2: Local Admin RBAC (Self-Assignment)</h3>
+                <p><strong>Learning Goal:</strong> Understand that your app can maintain its own role assignments</p>
+                <p><strong>Endpoint:</strong> <code>GET /api/admin-only</code></p>
+                <p><strong>Requirement:</strong> Local "Admin" role in our application's role store</p>
+                
+                <div style="background: #f0fff0; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+                    <strong>Teaching Point:</strong> Your application can maintain its own role assignments, separate from Entra ID.
+                    Entra ID provides <em>WHO you are</em> (identity), but YOUR app decides <em>WHAT you can do</em> (permissions).
+                    <br/><br/>
+                    <strong>Your Status:</strong> @(Model.HasLocalAdminRole ? "✓ You have the Admin role" : "✗ You do NOT have the Admin role")
+                    <br/>
+                    <strong>User ID:</strong> <code>@Model.UserId</code>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <button class="btn btn-success" onclick="assignAdminRole()" id="btnAssign" @(Model.HasLocalAdminRole ? "disabled" : "")>
+                        ➕ Assign Me Admin Role
+                    </button>
+                    <button class="btn btn-warning" onclick="removeAdminRole()" id="btnRemove" @(Model.HasLocalAdminRole ? "" : "disabled")>
+                        ➖ Remove My Admin Role
+                    </button>
+                </div>
+
+                <button class="btn btn-primary" onclick="callExample2()" id="btn2">
+                    Test Admin-Only Endpoint
+                </button>
+                
+                <div id="result2" style="margin-top: 1rem;"></div>
+            </div>
+
+            <!-- Example 3: Call Microsoft Graph -->
+            <div style="border: 2px solid #6f42c1; padding: 1.5rem; border-radius: 8px;">
+                <h3>🌐 Example 3: Call Microsoft Graph API</h3>
+                <p><strong>Learning Goal:</strong> Understand calling external services that require auth</p>
+                <p><strong>Endpoint:</strong> <code>GET /api/my-profile</code> (calls Microsoft Graph <code>/me</code>)</p>
+                <p><strong>Requirement:</strong> User.Read permission (configured by default in new apps)</p>
+                
+                <div style="background: #f8f5ff; padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+                    <strong>Teaching Point:</strong> Your app acquires an access token to call Microsoft Graph on your behalf. 
+                    This demonstrates calling downstream APIs with delegated permissions.
+                    <br/><br/>
+                    The <code>User.Read</code> permission is added by default to new app registrations, so this should work immediately.
+                </div>
+
+                <button class="btn btn-purple" onclick="callExample3()" id="btn3">
+                    Test Microsoft Graph Call
+                </button>
+                
+                <div id="result3" style="margin-top: 1rem;"></div>
+            </div>
+
+        </div>
+
+        <h2>Understanding the Flow</h2>
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-top: 2rem;">
+            <h4>What's happening behind the scenes:</h4>
+            <ol>
+                <li><strong>Example 1:</strong> ASP.NET Core checks if the user is authenticated (has a valid token)</li>
+                <li><strong>Example 2:</strong> Policy checks our local role store to see if you have the "Admin" role</li>
+                <li><strong>Example 3:</strong> Microsoft.Identity.Web acquires an access token for Microsoft Graph and calls the API</li>
+            </ol>
+            <p><strong>Key Insight:</strong> Entra ID handles authentication (WHO you are). Your application handles authorization (WHAT you can do)!</p>
+        </div>
+
+        <script>
+            async function assignAdminRole() {
+                const btnAssign = document.getElementById('btnAssign');
+                const btnRemove = document.getElementById('btnRemove');
+                const result = document.getElementById('result2');
+                
+                btnAssign.disabled = true;
+                result.innerHTML = '<div class="spinner"></div>';
+
+                try {
+                    const response = await fetch('/api/roles/assign-admin', { method: 'POST' });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        result.innerHTML = `
+                            <div class="alert alert-success">
+                                <strong>✓ Success!</strong> ${data.message}
+                                <p style="margin-top: 0.5rem;">You now have the <strong>Admin</strong> role. Try testing the Admin-Only endpoint!</p>
+                            </div>
+                        `;
+                        btnAssign.disabled = true;
+                        btnRemove.disabled = false;
+                    } else {
+                        result.innerHTML = `
+                            <div class="alert alert-danger">
+                                <strong>✗ Failed!</strong> ${data.error || 'Could not assign role'}
+                            </div>
+                        `;
+                        btnAssign.disabled = false;
+                    }
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>✗ Error!</strong> ${error.message}
+                        </div>
+                    `;
+                    btnAssign.disabled = false;
+                }
+            }
+
+            async function removeAdminRole() {
+                const btnAssign = document.getElementById('btnAssign');
+                const btnRemove = document.getElementById('btnRemove');
+                const result = document.getElementById('result2');
+                
+                btnRemove.disabled = true;
+                result.innerHTML = '<div class="spinner"></div>';
+
+                try {
+                    const response = await fetch('/api/roles/remove-admin', { method: 'POST' });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        result.innerHTML = `
+                            <div class="alert alert-success">
+                                <strong>✓ Success!</strong> ${data.message}
+                                <p style="margin-top: 0.5rem;">You no longer have the <strong>Admin</strong> role. The endpoint will now fail with 403 Forbidden.</p>
+                            </div>
+                        `;
+                        btnRemove.disabled = true;
+                        btnAssign.disabled = false;
+                    } else {
+                        result.innerHTML = `
+                            <div class="alert alert-danger">
+                                <strong>✗ Failed!</strong> ${data.error || 'Could not remove role'}
+                            </div>
+                        `;
+                        btnRemove.disabled = false;
+                    }
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>✗ Error!</strong> ${error.message}
+                        </div>
+                    `;
+                    btnRemove.disabled = false;
+                }
+            }
+
+            async function callExample1() {
+                const btn = document.getElementById('btn1');
+                const result = document.getElementById('result1');
+                
+                btn.disabled = true;
+                result.innerHTML = '<div class="spinner"></div>';
+
+                try {
+                    const response = await fetch('/api/authenticated');
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        result.innerHTML = `
+                            <div class="alert alert-success">
+                                <strong>✓ Success!</strong> ${data.message}
+                                <details style="margin-top: 1rem;">
+                                    <summary style="cursor: pointer; font-weight: 600;">View Response</summary>
+                                    <pre style="margin-top: 0.5rem;">${JSON.stringify(data, null, 2)}</pre>
+                                </details>
+                                <div style="margin-top: 1rem; padding: 0.75rem; background: #e7f3ff; border-radius: 4px;">
+                                    <strong>💡 Teaching Point:</strong> ${data.teachingPoint}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        result.innerHTML = `
+                            <div class="alert alert-danger">
+                                <strong>✗ Failed!</strong> ${data.message || 'Unexpected error'}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>✗ Error!</strong> ${error.message}
+                        </div>
+                    `;
+                }
+
+                btn.disabled = false;
+            }
+
+            async function callExample2() {
+                const btn = document.getElementById('btn2');
+                const result = document.getElementById('result2');
+                
+                btn.disabled = true;
+                result.innerHTML = '<div class="spinner"></div>';
+
+                try {
+                    const response = await fetch('/api/admin-only');
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        result.innerHTML = `
+                            <div class="alert alert-success">
+                                <strong>✓ Success!</strong> ${data.message}
+                                <details style="margin-top: 1rem;">
+                                    <summary style="cursor: pointer; font-weight: 600;">View Response</summary>
+                                    <pre style="margin-top: 0.5rem;">${JSON.stringify(data, null, 2)}</pre>
+                                </details>
+                                <div style="margin-top: 1rem; padding: 0.75rem; background: #e7f3ff; border-radius: 4px;">
+                                    <strong>💡 Teaching Point:</strong> ${data.teachingPoint}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        result.innerHTML = `
+                            <div class="alert alert-warning">
+                                <strong>⚠ Authorization Failed (403 Forbidden)</strong>
+                                <p>You are <strong>authenticated</strong> (we know who you are), but you are <strong>not authorized</strong> (you lack the required permission).</p>
+                                <p><strong>Why?</strong> The endpoint requires the "Admin" role in our application's local role store.</p>
+                                <p><strong>Solution:</strong> Click the "Assign Me Admin Role" button above, then try again!</p>
+                                <div style="margin-top: 1rem; padding: 0.75rem; background: #fff9e6; border-radius: 4px;">
+                                    <strong>💡 Teaching Point:</strong> Your application controls who has which roles. 
+                                    Entra ID doesn't know about your app's local "Admin" role - this is YOUR app's permission system!
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>✗ Error!</strong> ${error.message}
+                        </div>
+                    `;
+                }
+
+                btn.disabled = false;
+            }
+
+            async function callExample3() {
+                const btn = document.getElementById('btn3');
+                const result = document.getElementById('result3');
+                
+                btn.disabled = true;
+                result.innerHTML = '<div class="spinner"></div>';
+
+                try {
+                    const response = await fetch('/api/my-profile');
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        result.innerHTML = `
+                            <div class="alert alert-success">
+                                <strong>✓ Success!</strong> ${data.message}
+                                <details style="margin-top: 1rem;">
+                                    <summary style="cursor: pointer; font-weight: 600;">View Response</summary>
+                                    <pre style="margin-top: 0.5rem;">${JSON.stringify(data, null, 2)}</pre>
+                                </details>
+                                <div style="margin-top: 1rem; padding: 0.75rem; background: #e7f3ff; border-radius: 4px;">
+                                    <strong>💡 Teaching Point:</strong> ${data.teachingPoint}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        result.innerHTML = `
+                            <div class="alert alert-danger">
+                                <strong>✗ Failed!</strong> ${data.error || data.message || 'Failed to call Microsoft Graph'}
+                                ${data.hint ? `<br/><small>${data.hint}</small>` : ''}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    result.innerHTML = `
+                        <div class="alert alert-danger">
+                            <strong>✗ Error!</strong> ${error.message}
+                        </div>
+                    `;
+                }
+
+                btn.disabled = false;
+            }
+        </script>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <strong>⚠ Not Authenticated</strong> - Please sign in first to access this lab.
+        </div>
+        <a href="/MicrosoftIdentity/Account/SignIn" class="btn btn-primary">Sign In</a>
+    }
+</div>

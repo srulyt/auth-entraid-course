@@ -1,0 +1,108 @@
+@page
+@model IdTokenModel
+@{
+    ViewData["Title"] = "ID Token";
+}
+
+<div class="card">
+    <div class="card-header">
+        ID Token Explorer
+    </div>
+
+    @if (Model.TokenParts != null)
+    {
+        <div class="alert alert-success">
+            <strong>✓ ID Token Retrieved</strong> - This token proves your identity.
+        </div>
+
+        <div class="help-sidebar">
+            <h3>💡 About ID Tokens</h3>
+            <ul>
+                <li><strong>Purpose:</strong> ID tokens are intended for the <em>client application</em> to verify the user's identity</li>
+                <li><strong>Audience:</strong> Should match your application's Client ID</li>
+                <li><strong>Claims:</strong> Contains user information like name, email, and unique identifiers</li>
+                <li><strong>Not for APIs:</strong> Do not send ID tokens to APIs - use access tokens instead</li>
+            </ul>
+        </div>
+
+        <h2>Token Metadata</h2>
+        <div class="token-metadata">
+            <div class="metadata-item">
+                <div class="metadata-label">Issuer</div>
+                <div class="metadata-value">@Model.TokenParts.Issuer</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">Audience</div>
+                <div class="metadata-value">@(Model.TokenParts.Audiences.FirstOrDefault() ?? "N/A")</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">Valid From</div>
+                <div class="metadata-value">@Model.TokenParts.ValidFrom.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">Expires At</div>
+                <div class="metadata-value">@Model.TokenParts.ValidTo.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</div>
+            </div>
+        </div>
+
+        <h2>Key Claims</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Claim</th>
+                    <th>Value</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model.KeyClaims)
+                {
+                    <tr>
+                        <td><code>@claim.Type</code></td>
+                        <td>@claim.Value</td>
+                        <td>@claim.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h2>Token Structure</h2>
+        
+        <h3>Header</h3>
+        <pre><code>@Model.TokenParts.Header</code></pre>
+
+        <h3>Payload</h3>
+        <pre><code>@Model.TokenParts.Payload</code></pre>
+
+        <h3>Signature</h3>
+        <div class="alert alert-info">
+            <strong>ℹ Signature:</strong> The signature is cryptographically signed and should not be displayed in full for security reasons.
+            <br /><code>@Model.TokenParts.Signature.Substring(0, Math.Min(20, Model.TokenParts.Signature.Length))...</code>
+        </div>
+
+        <h2>Actions</h2>
+        <div class="btn-group">
+            <button class="btn btn-secondary btn-sm" onclick="copyToken()">📋 Copy Token</button>
+            <a href="@Model.JwtMsUrl" target="_blank" class="btn btn-primary btn-sm">🔗 Open in jwt.ms</a>
+            <a href="/Claims" class="btn btn-secondary btn-sm">View All Claims</a>
+        </div>
+
+        <script>
+            function copyToken() {
+                const token = '@Html.Raw(Model.TokenParts.RawToken)';
+                navigator.clipboard.writeText(token).then(() => {
+                    alert('Token copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy token:', err);
+                });
+            }
+        </script>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <strong>⚠ No ID Token Available</strong> - Please sign in first.
+        </div>
+        <a href="/MicrosoftIdentity/Account/SignIn" class="btn btn-primary">Sign In</a>
+    }
+</div>

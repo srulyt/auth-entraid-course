@@ -1,0 +1,97 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="card">
+    <div class="card-header">
+        Authentication Error
+    </div>
+
+    <div class="alert alert-danger">
+        <strong>⚠ An error occurred during authentication</strong>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <h2>Error Details</h2>
+        <div class="alert alert-warning">
+            <code>@Model.ErrorMessage</code>
+        </div>
+    }
+
+    <h2>Common Issues and Solutions</h2>
+
+    <details style="border: 1px solid #dee2e6; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <summary style="cursor: pointer; font-weight: 600;">AADSTS50011: Redirect URI Mismatch</summary>
+        <div style="margin-top: 1rem;">
+            <p><strong>Problem:</strong> The redirect URI in your request doesn't match the URIs configured in Azure AD.</p>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Go to Azure Portal → App registrations → Your app</li>
+                <li>Click "Authentication"</li>
+                <li>Under "Platform configurations" → "Web"</li>
+                <li>Add the exact redirect URI: <code>https://localhost:7001/signin-oidc</code></li>
+                <li>Click "Save"</li>
+                <li>Make sure the URI matches exactly (including https, port, and path)</li>
+            </ol>
+        </div>
+    </details>
+
+    <details style="border: 1px solid #dee2e6; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <summary style="cursor: pointer; font-weight: 600;">AADSTS700016: Application not found</summary>
+        <div style="margin-top: 1rem;">
+            <p><strong>Problem:</strong> The Client ID in your configuration doesn't match any app registration.</p>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Verify the Client ID in <code>appsettings.json</code></li>
+                <li>Go to Azure Portal → App registrations → Your app</li>
+                <li>Copy the "Application (client) ID"</li>
+                <li>Update the <code>AzureAd:ClientId</code> setting</li>
+            </ol>
+        </div>
+    </details>
+
+    <details style="border: 1px solid #dee2e6; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <summary style="cursor: pointer; font-weight: 600;">AADSTS65001: Consent Required</summary>
+        <div style="margin-top: 1rem;">
+            <p><strong>Problem:</strong> The application requires permissions that haven't been consented to.</p>
+            <p><strong>Solution:</strong></p>
+            <ol>
+                <li>Go to Azure Portal → App registrations → Your app</li>
+                <li>Click "API permissions"</li>
+                <li>Review the required permissions</li>
+                <li>Click "Grant admin consent" (if you're an admin)</li>
+                <li>Or sign in again to provide user consent</li>
+            </ol>
+        </div>
+    </details>
+
+    <details style="border: 1px solid #dee2e6; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+        <summary style="cursor: pointer; font-weight: 600;">Configuration Issues</summary>
+        <div style="margin-top: 1rem;">
+            <p><strong>Verify your appsettings.json:</strong></p>
+            <pre><code>{
+  "AzureAd": {
+    "Instance": "https://login.microsoftonline.com/",
+    "Domain": "yourdomain.onmicrosoft.com",
+    "TenantId": "YOUR_TENANT_ID",
+    "ClientId": "YOUR_CLIENT_ID",
+    "CallbackPath": "/signin-oidc"
+  }
+}</code></pre>
+            <p>Make sure to replace:</p>
+            <ul>
+                <li><code>YOUR_TENANT_ID</code> with your actual tenant ID</li>
+                <li><code>YOUR_CLIENT_ID</code> with your application (client) ID</li>
+                <li><code>yourdomain.onmicrosoft.com</code> with your tenant domain</li>
+            </ul>
+        </div>
+    </details>
+
+    <div style="margin-top: 2rem;">
+        <a href="/" class="btn btn-primary">Return Home</a>
+        <a href="/MicrosoftIdentity/Account/SignIn" class="btn btn-secondary">Try Again</a>
+    </div>
+</div>

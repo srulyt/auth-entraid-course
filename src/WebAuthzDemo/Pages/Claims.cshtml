@@ -1,0 +1,152 @@
+@page
+@model ClaimsModel
+@{
+    ViewData["Title"] = "Claims";
+}
+
+<div class="card">
+    <div class="card-header">
+        Claims Explorer
+    </div>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="alert alert-success">
+            <strong>✓ Authenticated</strong> - Viewing claims for @User.Identity.Name
+        </div>
+
+        <div class="help-sidebar">
+            <h3>💡 About Claims</h3>
+            <ul>
+                <li><strong>What are claims?</strong> Claims are statements about the user (e.g., name, email, roles)</li>
+                <li><strong>Source:</strong> Claims come from tokens (ID token and access tokens)</li>
+                <li><strong>Usage:</strong> Applications use claims for authentication and authorization decisions</li>
+                <li><strong>Standard claims:</strong> Some claims like <code>sub</code>, <code>iss</code>, <code>aud</code> are standardized</li>
+            </ul>
+        </div>
+
+        <h2>User Claims (@Model.AllClaims.Count total)</h2>
+        
+        <div style="margin-bottom: 1rem;">
+            <input type="text" id="searchClaims" placeholder="🔍 Search claims..." 
+                   style="width: 100%; padding: 0.75rem; border: 1px solid #dee2e6; border-radius: 4px;" 
+                   onkeyup="filterClaims()" />
+        </div>
+
+        <table id="claimsTable">
+            <thead>
+                <tr>
+                    <th>Claim Type</th>
+                    <th>Value</th>
+                    <th>Value Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model.AllClaims)
+                {
+                    <tr>
+                        <td><code>@claim.Type</code></td>
+                        <td>@claim.Value</td>
+                        <td><small>@claim.ValueType</small></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h2>Common Claims Explained</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 2rem 0;">
+            <div style="border: 1px solid #dee2e6; padding: 1rem; border-radius: 4px;">
+                <h4>Identity Claims</h4>
+                <ul style="margin: 0; padding-left: 1.5rem;">
+                    <li><code>sub</code> - Subject (unique user ID)</li>
+                    <li><code>oid</code> - Object ID (Azure AD user ID)</li>
+                    <li><code>tid</code> - Tenant ID</li>
+                    <li><code>name</code> - Display name</li>
+                    <li><code>preferred_username</code> - Email/username</li>
+                </ul>
+            </div>
+
+            <div style="border: 1px solid #dee2e6; padding: 1rem; border-radius: 4px;">
+                <h4>Token Claims</h4>
+                <ul style="margin: 0; padding-left: 1.5rem;">
+                    <li><code>iss</code> - Issuer (who issued the token)</li>
+                    <li><code>aud</code> - Audience (who the token is for)</li>
+                    <li><code>iat</code> - Issued at time</li>
+                    <li><code>exp</code> - Expiration time</li>
+                    <li><code>nbf</code> - Not before time</li>
+                </ul>
+            </div>
+
+            <div style="border: 1px solid #dee2e6; padding: 1rem; border-radius: 4px;">
+                <h4>Authorization Claims</h4>
+                <ul style="margin: 0; padding-left: 1.5rem;">
+                    <li><code>scp</code> - Scopes (delegated permissions)</li>
+                    <li><code>roles</code> - App roles assigned to user</li>
+                    <li><code>groups</code> - Group memberships</li>
+                    <li><code>wids</code> - Well-known directory roles</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>Claims by Category</h2>
+        
+        @if (Model.ClaimsByCategory.Any())
+        {
+            foreach (var category in Model.ClaimsByCategory)
+            {
+                <details style="margin-bottom: 1rem; border: 1px solid #dee2e6; border-radius: 4px; padding: 1rem;">
+                    <summary style="cursor: pointer; font-weight: 600; font-size: 1.1rem;">
+                        @category.Key (@category.Value.Count claims)
+                    </summary>
+                    <table style="margin-top: 1rem;">
+                        <thead>
+                            <tr>
+                                <th>Claim Type</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in category.Value)
+                            {
+                                <tr>
+                                    <td><code>@claim.Type</code></td>
+                                    <td>@claim.Value</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </details>
+            }
+        }
+
+        <script>
+            function filterClaims() {
+                const input = document.getElementById('searchClaims');
+                const filter = input.value.toUpperCase();
+                const table = document.getElementById('claimsTable');
+                const rows = table.getElementsByTagName('tr');
+
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    let found = false;
+                    
+                    for (let j = 0; j < cells.length; j++) {
+                        if (cells[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    
+                    rows[i].style.display = found ? '' : 'none';
+                }
+            }
+        </script>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <strong>⚠ Not Authenticated</strong> - Please sign in to view your claims.
+        </div>
+        <a href="/MicrosoftIdentity/Account/SignIn" class="btn btn-primary">Sign In</a>
+    }
+</div>

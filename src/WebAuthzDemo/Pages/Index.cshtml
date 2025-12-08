@@ -1,0 +1,99 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="card">
+    <div class="card-header">
+        Welcome to Entra ID Authentication & Authorization Labs
+    </div>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="alert alert-success">
+            <strong>✓ Authenticated</strong> - Welcome, @User.Identity.Name!
+        </div>
+        
+        <h2>Lab Navigation</h2>
+        <p>Explore the following sections to learn about authentication and authorization with Microsoft Entra ID:</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 2rem 0;">
+            <div style="border: 1px solid #dee2e6; padding: 1.5rem; border-radius: 4px;">
+                <h3>🔑 ID Token</h3>
+                <p>View and explore your ID token, which proves your identity.</p>
+                <a href="/Tokens/IdToken" class="btn btn-primary">View ID Token</a>
+            </div>
+
+            <div style="border: 1px solid #dee2e6; padding: 1.5rem; border-radius: 4px;">
+                <h3>🎫 Access Token</h3>
+                <p>Acquire and examine access tokens for calling APIs.</p>
+                <a href="/Tokens/AccessToken" class="btn btn-primary">View Access Token</a>
+            </div>
+
+            <div style="border: 1px solid #dee2e6; padding: 1.5rem; border-radius: 4px;">
+                <h3>📋 Claims</h3>
+                <p>See all the claims contained in your tokens.</p>
+                <a href="/Claims" class="btn btn-primary">View Claims</a>
+            </div>
+
+            <div style="border: 1px solid #dee2e6; padding: 1.5rem; border-radius: 4px;">
+                <h3>🔒 Protected API</h3>
+                <p>Test authorization with scope and role-based policies.</p>
+                <a href="/ProtectedApi" class="btn btn-primary">Test API</a>
+            </div>
+        </div>
+
+        <div class="help-sidebar">
+            <h3>💡 Key Concepts</h3>
+            <ul>
+                <li><strong>Authentication</strong> proves who you are (identity)</li>
+                <li><strong>Authorization</strong> determines what you can access (permissions)</li>
+                <li><strong>ID Token</strong> is intended for the client application to verify your identity</li>
+                <li><strong>Access Token</strong> is intended for resource APIs to grant or deny access</li>
+                <li><strong>Scopes</strong> represent delegated permissions (user context)</li>
+                <li><strong>Roles</strong> can represent app roles assigned to users or groups</li>
+            </ul>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <strong>ℹ Not Authenticated</strong> - Please sign in to start exploring.
+        </div>
+
+        <h2>About These Labs</h2>
+        <p>These labs demonstrate authentication and authorization using Microsoft Entra ID (formerly Azure AD) with ASP.NET Core.</p>
+
+        <h3>Lab 1: Authentication</h3>
+        <ul>
+            <li>Sign in with Microsoft Entra ID using OpenID Connect</li>
+            <li>Explore ID tokens and understand their claims</li>
+            <li>Acquire access tokens for Microsoft Graph</li>
+            <li>Learn about token lifetimes and refresh tokens</li>
+        </ul>
+
+        <h3>Lab 2: Authorization</h3>
+        <ul>
+            <li>Call protected API endpoints requiring specific scopes</li>
+            <li>Test role-based authorization policies</li>
+            <li>Handle authorization failures gracefully</li>
+            <li>Understand the difference between authentication and authorization</li>
+        </ul>
+
+        <div style="margin-top: 2rem;">
+            <a href="/MicrosoftIdentity/Account/SignIn" class="btn btn-primary" style="font-size: 1.25rem;">
+                Sign In with Microsoft Entra ID
+            </a>
+        </div>
+
+        <div class="help-sidebar" style="margin-top: 2rem;">
+            <h3>🎯 Prerequisites</h3>
+            <ul>
+                <li>Microsoft Entra ID tenant</li>
+                <li>App registration configured with redirect URI</li>
+                <li>Client ID and Tenant ID configured in appsettings.json</li>
+            </ul>
+        </div>
+    }
+</div>
