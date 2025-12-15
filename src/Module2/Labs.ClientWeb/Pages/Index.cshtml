@@ -1,0 +1,83 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home - Lab 3: Protected Web API";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Lab 3: Protected Web API + OBO Flow</h1>
+    <p class="lead">Explore calling a protected Web API with custom scopes and On-Behalf-Of (OBO) flow</p>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">✓ Authenticated</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Welcome, @User.Identity.Name!</strong></p>
+                    <p class="mb-0">You are signed in and can now call the protected API endpoints.</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="mb-0">Available Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/Identity" class="btn btn-primary">
+                            <i class="bi bi-person-badge"></i> View ID Token
+                        </a>
+                        <a href="/CallApi" class="btn btn-success">
+                            <i class="bi bi-arrow-right-circle"></i> Call Protected API
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">⚠ Not Authenticated</h5>
+                </div>
+                <div class="card-body">
+                    <p>You need to sign in to access the protected API.</p>
+                    <a href="/MicrosoftIdentity/Account/SignIn" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Lab Overview</h5>
+            </div>
+            <div class="card-body">
+                <h6>What you'll learn:</h6>
+                <ul class="small">
+                    <li>Call protected APIs with custom scopes</li>
+                    <li>Understand token audiences</li>
+                    <li>Use On-Behalf-Of (OBO) flow</li>
+                    <li>Explore scope-based authorization</li>
+                </ul>
+
+                <h6 class="mt-3">Architecture:</h6>
+                <div class="small">
+                    <code>ClientWeb</code> (you)
+                    <br/>↓ <em>api.read scope</em>
+                    <br/><code>MiddleTierApi</code>
+                    <br/>↓ <em>OBO flow</em>
+                    <br/><code>Microsoft Graph</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,17 +1,31 @@
 ## Brief overview
 
-This Cline rule file provides project context for an **ASP.NET Core 8.0 training lab application** designed to teach Microsoft Entra ID authentication and authorization concepts. The project consists of two hands-on labs where students learn by configuration only—no coding required during labs. All code is prebuilt with a focus on token exploration and authorization patterns.
+This Cline rule file provides project context for an **ASP.NET Core 8.0 training lab application** designed to teach Microsoft Entra ID authentication and authorization concepts. The project is organized into two modules with four hands-on labs where students learn by configuration only—no coding required during labs. All code is prebuilt with a focus on token exploration, authorization patterns, and multi-tier authentication flows.
 
 ## Project structure
 
-- **Single ASP.NET Core solution** with two main projects:
-  - `WebAuthzDemo`: Main web application (Razor Pages) with authentication, token viewers, and protected API
-  - `TokenInspector`: Class library for JWT decode/format helpers
-- **Documentation structure**:
-  - `docs/README.md`: Main setup and configuration guide
-  - `docs/Lab1_Authentication.md`: Authentication lab handout (10-15 min)
-  - `docs/Lab2_SimpleAuthorization.md`: Authorization lab handout (10-15 min)
-- **Scripts**: `scripts/setup.ps1` for generating configuration templates
+The repository is organized into two modules:
+
+**Module 1: Authentication & Authorization Basics** (`src/Module1/`)
+- `WebAuthzDemo`: Main web application (Razor Pages) with authentication, token viewers, and protected API
+- `TokenInspector`: Class library for JWT decode/format helpers (shared across modules)
+
+**Module 2: Protected Web APIs & Cross-Tenant** (`src/Module2/`)
+- `Labs.Shared`: Common models, constants, and configuration classes
+- `Labs.MiddleTierApi`: Protected Web API with OBO flow to Microsoft Graph
+- `Labs.ClientWeb`: Razor Pages client calling the protected API
+- `Labs.CrossTenantDaemon`: Console daemon app for cross-tenant scenarios
+
+**Documentation structure**:
+- `docs/README.md`: Main course overview
+- `docs/Module1/README.md`: Module 1 overview
+- `docs/Module1/Lab1_Authentication.md`: Authentication lab (10-15 min)
+- `docs/Module1/Lab2_SimpleAuthorization.md`: Authorization lab (10-15 min)
+- `docs/Module2/README.md`: Module 2 overview
+- `docs/Module2/Lab3_ProtectedWebAPI.md`: Protected API + OBO lab (12-15 min)
+- `docs/Module2/Lab4_CrossTenantDaemon.md`: Cross-tenant daemon lab (12-15 min)
+
+**Scripts**: `scripts/setup.ps1` for generating configuration templates
 
 ## Tech stack requirements
 
@@ -24,6 +38,8 @@ This Cline rule file provides project context for an **ASP.NET Core 8.0 training
 
 ## Lab objectives
 
+**Module 1: Foundations**
+
 **Lab 1 (Authentication):**
 - Sign in with Microsoft Entra ID
 - Explore ID token vs Access token differences
@@ -35,8 +51,26 @@ This Cline rule file provides project context for an **ASP.NET Core 8.0 training
 - Understand the difference between authentication and authorization
 - Test authentication-only authorization (`[Authorize]` attribute)
 - Test local application-managed RBAC (self-assignment of Admin role)
-- Call Microsoft Graph API with delegated permissions (`User.Read` scope - configured by default)
+- Call Microsoft Graph API with delegated permissions (`User.Read` scope)
 - Understand that Entra ID provides identity while your app manages permissions
+
+**Module 2: Advanced Scenarios**
+
+**Lab 3 (Protected Web API + OBO Flow):**
+- Expose and protect custom API with custom scopes (`api.read`)
+- Understand token audience validation for APIs
+- Implement scope-based authorization in ASP.NET Core
+- Use On-Behalf-Of (OBO) flow to call Microsoft Graph from the API
+- Explore three-tier authentication (Client → API → Graph)
+- Compare delegated permissions vs custom API scopes
+
+**Lab 4 (Cross-Tenant Daemon):**
+- Implement app-only (daemon) authentication with client credentials flow
+- Understand application permissions vs delegated permissions
+- Configure multi-tenant applications
+- Acquire tokens for multiple Entra ID tenants
+- Call Microsoft Graph without user context
+- Explore cross-tenant consent and security considerations
 
 ## Key constraints
 
@@ -57,6 +91,7 @@ This Cline rule file provides project context for an **ASP.NET Core 8.0 training
 
 ## Authorization patterns
 
+**Module 1 patterns:**
 - Define **named policies** for authorization requirements:
   - `RequireLocalAdmin`: Checks local role store for "Admin" role
 - Apply `[Authorize]` attribute with or without policy names:
@@ -69,8 +104,16 @@ This Cline rule file provides project context for an **ASP.NET Core 8.0 training
 - Provide **role management endpoints**:
   - `POST /api/roles/assign-admin` - Self-assign Admin role
   - `POST /api/roles/remove-admin` - Remove Admin role
-- Use Microsoft.Identity.Web to acquire access tokens for downstream APIs (Microsoft Graph)
-- Provide clear guidance when authorization fails (e.g., "You're authenticated but not authorized")
+
+**Module 2 patterns:**
+- **Custom API scopes**: Define and expose API-specific scopes (e.g., `api.read`)
+- **Scope-based authorization**: Validate scopes in access tokens with named policies
+  - `RequireApiReadScope`: Checks for `api.read` scope claim
+- **On-Behalf-Of (OBO) flow**: API exchanges user's access token for Graph token
+- **App-only authentication**: Client credentials flow for daemon apps
+- **Application permissions**: Tenant-wide permissions requiring admin consent
+- **Multi-tenant support**: Cross-tenant token acquisition and consent
+- Provide clear guidance when authorization fails with actionable error messages
 
 ## UI/UX priorities
 
@@ -116,16 +159,23 @@ This Cline rule file provides project context for an **ASP.NET Core 8.0 training
 
 ## Quality standards
 
-- Application builds and runs without manual code edits after configuration
+- All applications build and run without manual code edits after configuration
 - Clear, actionable error messages for authorization failures
-- Three distinct authorization examples with clear learning goals:
+- **Module 1**: Three distinct authorization examples with clear learning goals:
   1. Authentication-only (baseline)
   2. Local application-managed roles (interactive self-assignment)
   3. Delegated permissions to Microsoft Graph
+- **Module 2**: Advanced scenarios demonstrating real-world patterns:
+  1. Custom API protection with scopes
+  2. On-Behalf-Of (OBO) flow for API chaining
+  3. App-only authentication for background services
+  4. Cross-tenant authentication and consent
 - UI provides educational value for token exploration and authorization concepts
-- Interactive role assignment demonstrates separation of identity (Entra ID) and permissions (app)
+- Interactive demonstrations show separation of identity (Entra ID) and permissions (app/API)
 - Documentation enables self-service setup by instructors
-- Zero Azure configuration needed beyond Lab 1 (User.Read is default)
+- Module 1 requires minimal Azure configuration (User.Read is default)
+- Module 2 demonstrates enterprise-grade authentication patterns
+- All solutions use consistent architecture and coding patterns
 
 ## Updates to this document
 

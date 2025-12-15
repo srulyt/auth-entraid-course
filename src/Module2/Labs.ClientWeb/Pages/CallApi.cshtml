@@ -1,0 +1,92 @@
+@page
+@model CallApiModel
+@{
+    ViewData["Title"] = "Call Protected API";
+}
+
+<h1>Call Protected API</h1>
+<p class="lead">Test the three API endpoints demonstrating scope-based authorization and OBO flow</p>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">API Endpoints</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="d-grid gap-2">
+                        <button type="submit" asp-page-handler="WhoAmI" class="btn btn-outline-primary">
+                            <strong>1. /api/whoami</strong> - View Access Token Claims
+                        </button>
+                        <button type="submit" asp-page-handler="Secure" class="btn btn-outline-success">
+                            <strong>2. /api/secure</strong> - Scope-Protected Endpoint
+                        </button>
+                        <button type="submit" asp-page-handler="GraphMe" class="btn btn-outline-info">
+                            <strong>3. /api/graphme</strong> - Call Graph via OBO
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.ApiResponse != null)
+        {
+            <div class="card">
+                <div class="card-header @(Model.ApiResponse.Success ? "bg-success text-white" : "bg-danger text-white")">
+                    <h5 class="mb-0">@(Model.ApiResponse.Success ? "✓ Success" : "✗ Error")</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Message:</strong> @Model.ApiResponse.Message</p>
+                    
+                    @if (Model.ApiResponse.Metadata.Any())
+                    {
+                        <hr />
+                        <h6>Metadata:</h6>
+                        <table class="table table-sm">
+                            @foreach (var meta in Model.ApiResponse.Metadata)
+                            {
+                                <tr>
+                                    <td><strong>@meta.Key:</strong></td>
+                                    <td>@meta.Value</td>
+                                </tr>
+                            }
+                        </table>
+                    }
+
+                    @if (Model.ApiResponse.Data != null)
+                    {
+                        <hr />
+                        <h6>Response Data:</h6>
+                        <pre class="bg-light p-3 rounded"><code>@System.Text.Json.JsonSerializer.Serialize(Model.ApiResponse.Data, new System.Text.Json.JsonSerializerOptions { WriteIndented = true })</code></pre>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6>Understanding the Flow:</h6>
+                <ol class="small">
+                    <li><strong>Token Acquisition:</strong> When you click a button, the app acquires an access token with the <code>api.read</code> scope.</li>
+                    <li><strong>API Call:</strong> The access token is sent to the API in the Authorization header.</li>
+                    <li><strong>Token Validation:</strong> The API validates the token and checks the scope.</li>
+                    <li><strong>OBO (Endpoint 3):</strong> The API uses your token to get a new token for Microsoft Graph.</li>
+                </ol>
+
+                <h6 class="mt-3">Key Concepts:</h6>
+                <ul class="small">
+                    <li><strong>Audience:</strong> Access token audience is the API (not Graph)</li>
+                    <li><strong>Scope:</strong> Token contains <code>scp: api.read</code></li>
+                    <li><strong>OBO Flow:</strong> API exchanges user token for Graph token</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="/" class="btn btn-secondary">← Back to Home</a>
+</div>

@@ -4,7 +4,21 @@ Complete ASP.NET Core 8.0 lab application demonstrating authentication and autho
 
 ## 🎯 Overview
 
-This repository contains two hands-on labs designed to teach authentication and authorization concepts through configuration and exploration—**no coding required**.
+This repository contains **two modules** with hands-on labs designed to teach authentication and authorization concepts through configuration and exploration—**no coding required**.
+
+## 📚 Course Modules
+
+### [Module 1: Authentication & Authorization Basics](Module1/README.md)
+Foundational concepts for single-application scenarios (25-30 minutes)
+
+### [Module 2: Protected Web APIs & Cross-Tenant](Module2/README.md)
+Advanced multi-tier and service-to-service scenarios (25-30 minutes)
+
+---
+
+## Module 1: Foundations
+
+This module contains two hands-on labs for learning authentication basics.
 
 ### Lab 1: Authentication with Microsoft Entra ID (~25-30 minutes)
 **Learning Objectives:**
