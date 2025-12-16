@@ -129,14 +129,7 @@ API Scope:        api://[your-api-client-id]/api.read
      - URI: `https://localhost:5001/signin-oidc`
 3. Click **Register**
 
-### Step 2.2: Configure Authentication
-
-1. Go to **Authentication**
-2. Under **Implicit grant and hybrid flows**, check:
-   - ✅ **ID tokens** (used for implicit and hybrid flows)
-3. Click **Save**
-
-### Step 2.3: Add API Permissions
+### Step 2.2: Add API Permissions
 
 The client needs permission to call your protected API:
 
@@ -151,7 +144,7 @@ The client needs permission to call your protected API:
    - `Microsoft Graph > User.Read` (default)
    - `Labs-MiddleTierApi > api.read`
 
-### Step 2.4: Create a Client Secret
+### Step 2.3: Create a Client Secret
 
 1. Go to **Certificates & secrets**
 2. Click **New client secret**
@@ -160,7 +153,7 @@ The client needs permission to call your protected API:
 5. Click **Add**
 6. **⚠️ IMPORTANT**: Copy the secret **Value** immediately (not the Secret ID)
 
-### Step 2.5: Record Client Configuration
+### Step 2.4: Record Client Configuration
 
 Copy these values:
 
@@ -189,12 +182,12 @@ Without this configuration, the On-Behalf-Of flow fails because:
 4. Add your Client app's Client ID to the array:
    ```json
    "knownClientApplications": [
-       "[your-client-client-id-from-step-2.5]"
+       "[your-client-client-id-from-step-2.4]"
    ],
    ```
 5. Click **Save** at the top
 
-**⚠️ Important**: Use the Client ID from Step 2.5, not the API's Client ID.
+**⚠️ Important**: Use the Client ID from Step 2.4, not the API's Client ID.
 
 **✅ Verification**: The manifest should now show your client app ID in the `knownClientApplications` array.
 
@@ -251,9 +244,9 @@ OBO flow works seamlessly!
   "AzureAd": {
     "Instance": "https://login.microsoftonline.com/",
     "Domain": "yourtenant.onmicrosoft.com",
-    "TenantId": "[Client Tenant ID from Step 2.6]",
-    "ClientId": "[Client Client ID from Step 2.6]",
-    "ClientSecret": "[API Client Secret from Step 2.6]",
+    "TenantId": "[Client Tenant ID from Step 2.4]",
+    "ClientId": "[Client Client ID from Step 2.4]",
+    "ClientSecret": "[API Client Secret from Step 2.4]",
     "CallbackPath": "/signin-oidc"
   },
   "DownstreamApi": {
