@@ -4,17 +4,20 @@ This Cline rule file provides project context for an **ASP.NET Core 8.0 training
 
 ## Project structure
 
-The repository is organized into two modules:
+The repository is organized into three modules:
 
 **Module 1: Authentication & Authorization Basics** (`src/Module1/`)
 - `WebAuthzDemo`: Main web application (Razor Pages) with authentication, token viewers, and protected API
-- `TokenInspector`: Class library for JWT decode/format helpers (shared across modules)
+- `TokenInspector`: Class library for JWT decode/format helpers (shared across all modules)
 
 **Module 2: Protected Web APIs & Cross-Tenant** (`src/Module2/`)
 - `Labs.Shared`: Common models, constants, and configuration classes
 - `Labs.MiddleTierApi`: Protected Web API with OBO flow to Microsoft Graph
 - `Labs.ClientWeb`: Razor Pages client calling the protected API
 - `Labs.CrossTenantDaemon`: Console daemon app for cross-tenant scenarios
+
+**Module 3: Public Client Authentication** (`src/Module3/`)
+- `Labs.Cli`: Modern CLI tool demonstrating public client flows (PKCE and Device Code)
 
 **Documentation structure**:
 - `docs/README.md`: Main course overview
@@ -24,6 +27,8 @@ The repository is organized into two modules:
 - `docs/Module2/README.md`: Module 2 overview
 - `docs/Module2/Lab3_ProtectedWebAPI.md`: Protected API + OBO lab (12-15 min)
 - `docs/Module2/Lab4_CrossTenantDaemon.md`: Cross-tenant daemon lab (12-15 min)
+- `docs/Module3/README.md`: Module 3 overview
+- `docs/Module3/Lab5_PublicClientCLI.md`: Public client CLI authentication lab (45-60 min)
 
 **Scripts**: `scripts/setup.ps1` for generating configuration templates
 
@@ -71,6 +76,17 @@ The repository is organized into two modules:
 - Acquire tokens for multiple Entra ID tenants
 - Call Microsoft Graph without user context
 - Explore cross-tenant consent and security considerations
+
+**Module 3: Public Client Authentication**
+
+**Lab 5 (Public Client CLI):**
+- Understand why client secrets cannot be used in CLI/desktop/mobile apps
+- Configure public client app registration in Entra ID
+- Use Authorization Code + PKCE flow for interactive authentication
+- Use Device Code flow for limited-input scenarios
+- Explore token caching and security trade-offs for local storage
+- Call Microsoft Graph API from a CLI tool
+- Implement security best practices for public clients
 
 ## Key constraints
 

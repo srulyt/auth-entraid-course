@@ -14,6 +14,9 @@ Foundational concepts for single-application scenarios (25-30 minutes)
 ### [Module 2: Protected Web APIs & Cross-Tenant](Module2/README.md)
 Advanced multi-tier and service-to-service scenarios (25-30 minutes)
 
+### [Module 3: Public Client Authentication for CLI Tools](Module3/README.md)
+Public client flows for command-line and native applications, plus user identity types (65-90 minutes)
+
 ---
 
 ## Module 1: Foundations
@@ -64,6 +67,53 @@ This module contains two hands-on labs for learning authentication basics.
 - ✅ Clear teaching aids and conceptual explanations
 - ✅ Error simulation for common authentication issues
 - ✅ Protected API endpoints demonstrating authorization
+
+## Module 3: Public Client Authentication
+
+This module demonstrates authentication patterns for applications that cannot securely store secrets.
+
+### Lab 5: Public Client CLI Authentication (~45-60 minutes)
+**Learning Objectives:**
+- Understand why client secrets cannot be used in public clients
+- Configure public client app registration in Entra ID
+- Use Authorization Code + PKCE flow for interactive authentication
+- Use Device Code flow for limited-input scenarios
+- Explore token caching and security trade-offs for local storage
+- Call Microsoft Graph API from a CLI tool
+- Implement security best practices for public clients
+
+**What Students Will Do:**
+- Create public client app registration (no secrets!)
+- Configure mobile/desktop platform settings
+- Build and run a CLI tool with two authentication flows
+- Compare PKCE vs Device Code flows
+- Manage local token cache
+- Call Microsoft Graph from command line
+- Understand public client security considerations
+
+[Start Lab 5 →](Module3/Lab5_PublicClientCLI.md)
+
+---
+
+### Lab 6: External Users and Identity Types (~20-25 minutes)
+**Learning Objectives:**
+- Understand the difference between internal (member) and external (guest) users
+- Recognize how user type affects token claims
+- Learn about the User Principal Name (UPN) claim
+- Compare authentication behavior across different identity types
+- Understand identity provider federation concepts
+
+**What Students Will Do:**
+- Update app registration to include UPN optional claim
+- Create an internal member user with MFA setup
+- Sign in with Microsoft Account (external guest user)
+- Sign in with internal user and compare token claims
+- (Bonus) Invite corporate user as guest and compare claims
+- Understand the difference between identity provider and tenant membership
+
+[Start Lab 6 →](Module3/Lab6_ExternalUsers.md)
+
+---
 
 ## 📋 Prerequisites
 
